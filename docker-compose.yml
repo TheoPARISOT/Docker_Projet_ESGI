@@ -1,0 +1,81 @@
+version: '3.1'
+services:
+  
+  
+  web:
+    image: nginx
+    container_name: "docker_partiel"
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./app1:/code/app1
+      - ./app2:/code/app2
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./logs:/var/log/nginx/
+    networks:
+      - www1
+      - www2
+  
+
+  php1:
+    build: 
+      context: ./dockerfiles
+      dockerfile: Dockerfile-php1
+    container_name: "php1"
+    volumes:
+      - ./app1:/code/app1
+    networks:
+      - www1
+  database1:
+    image: mysql:8.3.0
+    container_name: "db1"
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_USER: "app1"
+      MYSQL_PASSWORD: "app1"
+      MYSQL_DATABASE: "app1"
+    networks:
+      - www1
+  phpmyadmin1:
+    image: phpmyadmin/phpmyadmin
+    container_name: "phpmyadmin1"
+    ports:
+      - 3000:80
+    networks:
+      - www1
+  
+  
+  php2:
+    build: 
+      context: ./dockerfiles
+      dockerfile: Dockerfile-php1
+    container_name: "php2"
+    volumes:
+      - ./app2:/code/app2
+    networks:
+      - www2
+  database2:
+    image: mysql:8.0.3
+    container_name: "db2"
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_USER: "app2"
+      MYSQL_PASSWORD: "app2"
+      MYSQL_DATABASE: "app2"
+    networks:
+      - www2
+  phpmyadmin2:
+    image: phpmyadmin/phpmyadmin
+    container_name: "phpmyadmin2"
+    ports:
+      - 3001:80
+    networks:
+      - www2
+
+
+networks:   # Network creation
+  www1:   # First site Network 
+    driver: bridge
+  www2:   # Second site Network 
+    driver: bridge
